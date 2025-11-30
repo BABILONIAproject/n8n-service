@@ -1,5 +1,4 @@
 FROM n8nio/n8n:latest
 
-# Aggiungi il comando n8n come entry point
-ENTRYPOINT ["n8n"]
-CMD ["start", "--port", "${PORT:-5678}"]
+# Usa la variabile PORT che Render passa all'istanza
+CMD ["n8n", "start", "--port", "${PORT}"]
