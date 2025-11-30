@@ -1,4 +1,5 @@
 FROM n8nio/n8n:latest
 
-# Usa la porta 5678
-CMD ["n8n", "start", "--port", "5678"]
+# Aggiungi il comando n8n come entry point
+ENTRYPOINT ["n8n"]
+CMD ["start", "--port", "${PORT:-5678}"]
