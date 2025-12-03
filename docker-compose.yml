@@ -1,14 +1,53 @@
 version: "3.8"
 
 services:
+  postgres:
+    image: postgres:15
+    container_name: n8n-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: n8n
+      POSTGRES_PASSWORD: n8n
+      POSTGRES_DB: n8n_local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432" # così non entra in conflitto con eventuale Postgres locale
+
   n8n:
     image: n8nio/n8n:latest
+    container_name: n8n-local
+    restart: unless-stopped
+    depends_on:
+      - postgres
     ports:
       - "5678:5678"
-    restart: always
     environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=change_me_password
-      - N8N_HOST=0.0.0.0
-      - N8N_PORT=5678
+      # DB POSTGRES
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: n8n_local
+      DB_POSTGRESDB_USER: n8n
+      DB_POSTGRESDB_PASSWORD: n8n
+
+      # URL n8n locale
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      WEBHOOK_URL: http://localhost:5678
+
+      # (opzionale) stessa encryption key che usi su Render
+      # così puoi riusare credenziali anche in locale
+      N8N_ENCRYPTION_KEY: "metti_qui_la_stessa_chiave_di_Render"
+
+      # Basic auth per proteggere l’editor locale
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: "giuseppe"
+      N8N_BASIC_AUTH_PASSWORD: "Gdv2025!n8n"
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  postgres_data:
+  n8n_data:
